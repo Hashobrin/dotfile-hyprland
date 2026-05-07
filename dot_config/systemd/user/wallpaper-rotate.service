@@ -1,0 +1,6 @@
+[Unit]
+Description=Rotate wallpaper from ~/Pictures/Wallpapers
+
+[Service]
+Type=oneshot
+ExecStart=%h/.config/hypr/custom/scripts/wallpaper-rotate.sh
