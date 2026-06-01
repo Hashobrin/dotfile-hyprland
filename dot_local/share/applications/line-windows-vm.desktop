@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=LINE
+Comment=LINE via Windows VM
+Exec=bash -c "virsh --connect qemu:///system start LINE-Windows 2>/dev/null; virt-manager --connect qemu:///system --show-domain-console LINE-Windows"
+Icon=internet-chat
+Terminal=false
+Type=Application
+Categories=Network;InstantMessaging;
