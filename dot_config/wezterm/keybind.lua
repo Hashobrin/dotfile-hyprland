@@ -1,13 +1,31 @@
 local wezterm = require("wezterm")
 local act = wezterm.action
 
--- Show which key table is active in the status area
+-- Show IME state and active key table in the status area
 wezterm.on("update-right-status", function(window, pane)
+  -- fcitx5-remote: 1=EN, 2=JP
+  local ime = "EN"
+  local ok, stdout = wezterm.run_child_process({ "fcitx5-remote" })
+  if ok and stdout:gsub("%s+", "") == "2" then
+    ime = "JP"
+  end
+
   local name = window:active_key_table()
   if name then
     name = "TABLE: " .. name
+  elseif window:leader_is_active() then
+    name = "LEADER"
   end
-  window:set_right_status(name or "")
+
+  local items = {}
+  if name then
+    table.insert(items, { Foreground = { Color = "#e0af68" } })
+    table.insert(items, { Text = " " .. name .. " " })
+  end
+  table.insert(items, { Foreground = { Color = ime == "JP" and "#ff9e64" or "#7aa2f7" } })
+  table.insert(items, { Text = " " .. ime .. " " })
+
+  window:set_right_status(wezterm.format(items))
 end)
 
 return {
@@ -48,17 +66,15 @@ return {
         end),
       }),
     },
-    -- コマンドパレット表示
-    { key = "p", mods = "SUPER", action = act.ActivateCommandPalette },
     -- Tab移動
     { key = "Tab", mods = "CTRL", action = act.ActivateTabRelative(1) },
     { key = "Tab", mods = "SHIFT|CTRL", action = act.ActivateTabRelative(-1) },
     -- Tab入れ替え
     { key = "{", mods = "LEADER", action = act({ MoveTabRelative = -1 }) },
     -- Tab新規作成
-    { key = "t", mods = "SUPER", action = act({ SpawnTab = "CurrentPaneDomain" }) },
+    { key = "t", mods = "SHIFT|CTRL", action = act({ SpawnTab = "CurrentPaneDomain" }) },
     -- Tabを閉じる
-    { key = "w", mods = "SUPER", action = act({ CloseCurrentTab = { confirm = true } }) },
+    { key = "w", mods = "SHIFT|CTRL", action = act({ CloseCurrentTab = { confirm = true } }) },
     { key = "}", mods = "LEADER", action = act({ MoveTabRelative = 1 }) },
 
     -- 画面フルスクリーン切り替え
@@ -68,20 +84,20 @@ return {
     -- { key = 'X', mods = 'LEADER', action = act.ActivateKeyTable{ name = 'copy_mode', one_shot =false }, },
     { key = "[", mods = "LEADER", action = act.ActivateCopyMode },
     -- コピー
-    { key = "c", mods = "SUPER", action = act.CopyTo("Clipboard") },
+    { key = "c", mods = "SHIFT|CTRL", action = act.CopyTo("Clipboard") },
     -- 貼り付け
-    { key = "v", mods = "SUPER", action = act.PasteFrom("Clipboard") },
+    { key = "v", mods = "SHIFT|CTRL", action = act.PasteFrom("Clipboard") },
 
-    -- Pane作成 leader + r or d
-    { key = "d", mods = "LEADER", action = act.SplitVertical({ domain = "CurrentPaneDomain" }) },
+    -- Pane作成 leader + v or r
+    { key = "v", mods = "LEADER", action = act.SplitVertical({ domain = "CurrentPaneDomain" }) },
     { key = "r", mods = "LEADER", action = act.SplitHorizontal({ domain = "CurrentPaneDomain" }) },
     -- Paneを閉じる leader + x
     { key = "x", mods = "LEADER", action = act({ CloseCurrentPane = { confirm = true } }) },
-    -- Pane移動 leader + hlkj
-    { key = "h", mods = "LEADER", action = act.ActivatePaneDirection("Left") },
-    { key = "l", mods = "LEADER", action = act.ActivatePaneDirection("Right") },
-    { key = "k", mods = "LEADER", action = act.ActivatePaneDirection("Up") },
-    { key = "j", mods = "LEADER", action = act.ActivatePaneDirection("Down") },
+    -- Pane移動 leader + dhtn
+    { key = "d", mods = "LEADER", action = act.ActivatePaneDirection("Left") },
+    { key = "n", mods = "LEADER", action = act.ActivatePaneDirection("Right") },
+    { key = "t", mods = "LEADER", action = act.ActivatePaneDirection("Up") },
+    { key = "h", mods = "LEADER", action = act.ActivatePaneDirection("Down") },
     -- Pane選択
     { key = "[", mods = "CTRL|SHIFT", action = act.PaneSelect },
     -- 選択中のPaneのみ表示
@@ -121,27 +137,27 @@ return {
   key_tables = {
     -- Paneサイズ調整 leader + s
     resize_pane = {
-      { key = "h", action = act.AdjustPaneSize({ "Left", 1 }) },
-      { key = "l", action = act.AdjustPaneSize({ "Right", 1 }) },
-      { key = "k", action = act.AdjustPaneSize({ "Up", 1 }) },
-      { key = "j", action = act.AdjustPaneSize({ "Down", 1 }) },
+      { key = "d", action = act.AdjustPaneSize({ "Left", 1 }) },
+      { key = "n", action = act.AdjustPaneSize({ "Right", 1 }) },
+      { key = "t", action = act.AdjustPaneSize({ "Up", 1 }) },
+      { key = "h", action = act.AdjustPaneSize({ "Down", 1 }) },
 
       -- Cancel the mode by pressing escape
       { key = "Enter", action = "PopKeyTable" },
     },
     activate_pane = {
-      { key = "h", action = act.ActivatePaneDirection("Left") },
-      { key = "l", action = act.ActivatePaneDirection("Right") },
-      { key = "k", action = act.ActivatePaneDirection("Up") },
-      { key = "j", action = act.ActivatePaneDirection("Down") },
+      { key = "d", action = act.ActivatePaneDirection("Left") },
+      { key = "n", action = act.ActivatePaneDirection("Right") },
+      { key = "t", action = act.ActivatePaneDirection("Up") },
+      { key = "h", action = act.ActivatePaneDirection("Down") },
     },
     -- copyモード leader + [
     copy_mode = {
       -- 移動
-      { key = "h", mods = "NONE", action = act.CopyMode("MoveLeft") },
-      { key = "j", mods = "NONE", action = act.CopyMode("MoveDown") },
-      { key = "k", mods = "NONE", action = act.CopyMode("MoveUp") },
-      { key = "l", mods = "NONE", action = act.CopyMode("MoveRight") },
+      { key = "d", mods = "NONE", action = act.CopyMode("MoveLeft") },
+      { key = "h", mods = "NONE", action = act.CopyMode("MoveDown") },
+      { key = "t", mods = "NONE", action = act.CopyMode("MoveUp") },
+      { key = "n", mods = "NONE", action = act.CopyMode("MoveRight") },
       -- 最初と最後に移動
       { key = "^", mods = "NONE", action = act.CopyMode("MoveToStartOfLineContent") },
       { key = "$", mods = "NONE", action = act.CopyMode("MoveToEndOfLineContent") },
@@ -155,10 +171,10 @@ return {
       { key = "w", mods = "NONE", action = act.CopyMode("MoveForwardWord") },
       { key = "b", mods = "NONE", action = act.CopyMode("MoveBackwardWord") },
       { key = "e", mods = "NONE", action = act.CopyMode("MoveForwardWordEnd") },
-      -- ジャンプ機能 t f
-      { key = "t", mods = "NONE", action = act.CopyMode({ JumpForward = { prev_char = true } }) },
+      -- ジャンプ機能 z f
+      { key = "z", mods = "NONE", action = act.CopyMode({ JumpForward = { prev_char = true } }) },
       { key = "f", mods = "NONE", action = act.CopyMode({ JumpForward = { prev_char = false } }) },
-      { key = "T", mods = "NONE", action = act.CopyMode({ JumpBackward = { prev_char = true } }) },
+      { key = "Z", mods = "NONE", action = act.CopyMode({ JumpBackward = { prev_char = true } }) },
       { key = "F", mods = "NONE", action = act.CopyMode({ JumpBackward = { prev_char = false } }) },
       -- 一番下へ
       { key = "G", mods = "NONE", action = act.CopyMode("MoveToScrollbackBottom") },

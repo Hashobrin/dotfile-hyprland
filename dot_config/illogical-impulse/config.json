@@ -80,7 +80,7 @@
       "workspaceZoom": 1.07
     },
     "thumbnailPath": "",
-    "wallpaperPath": "/home/groucho/Pictures/Wallpapers/random_wallpaper.png",
+    "wallpaperPath": "/home/groucho/Pictures/Wallpapers/wp1841021.jpg",
     "widgets": {
       "clock": {
         "cookie": {
@@ -141,7 +141,7 @@
       }
     },
     "borderless": false,
-    "bottom": true,
+    "bottom": false,
     "cornerStyle": 0,
     "floatStyleShadow": true,
     "indicators": {

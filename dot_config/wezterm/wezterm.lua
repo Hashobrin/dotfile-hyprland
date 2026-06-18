@@ -2,10 +2,10 @@ local wezterm = require("wezterm")
 local config = wezterm.config_builder()
 
 config.automatically_reload_config = true
-config.font_size = 12.0
+config.font_size = 10.0
 config.use_ime = true
--- Transparency/blur is handled by Hyprland (see ~/.config/hypr/custom/rules.conf)
-config.window_background_opacity = 1.0
+-- Blur is handled by Hyprland (see ~/.config/hypr/custom/rules.conf)
+config.window_background_opacity = 0.85
 
 ----------------------------------------------------
 -- Tab
@@ -25,22 +25,28 @@ config.window_frame = {
   active_titlebar_bg = "none",
 }
 
--- タブバーを背景色に合わせる
-config.window_background_gradient = {
-  colors = { "#000000" },
-}
-
 -- タブの追加ボタンを非表示
 config.show_new_tab_button_in_tab_bar = false
 -- nightlyのみ使用可能
 -- タブの閉じるボタンを非表示
 config.show_close_tab_button_in_tabs = false
 
+-- カラー
+config.color_scheme = 'Tokyo Night'
+
+-- 非アクティブペインを暗くする
+config.inactive_pane_hsb = {
+  saturation = 0.6,
+  brightness = 0.6,
+}
+
 -- タブ同士の境界線を非表示
 config.colors = {
   tab_bar = {
     inactive_tab_edge = "none",
   },
+  -- アクティブペインの境界線
+  split = "#7aa2f7",
 }
 
 -- タブの形をカスタマイズ
